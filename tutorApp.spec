@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['tutorApp.py'],
-             pathex=['C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM'],
-             binaries=[ ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\chromedriver.exe', '.') ],
-             datas=[ ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\banner.png', '.'), ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\icon.png', '.') ],
+             pathex=['C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\App Tutores'],
+             binaries=[ ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\App Tutores\\chromedriver.exe', '.') ],
+             datas=[ ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\App Tutores\\banner.png', '.'), ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-UNAB\\SELENIUM\\App Tutores\\icon.png', '.') ],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],

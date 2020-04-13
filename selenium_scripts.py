@@ -52,10 +52,6 @@ class BbScripts:
             self.driver.close()
             self.driver.quit()
 
-    def __del__(self):
-        self.driver.close()
-        self.driver.quit()
-
     def send_data_output(self, text):
         self.logger.info(text)
         self.output(text)
@@ -114,6 +110,8 @@ class BbScripts:
             user_text.send_keys(user)
             user_text.send_keys(Keys.ENTER)
 
+            sleep(1)
+
             try:
                 usermenu = self.driver.find_element_by_xpath(
                     "/html/body/div[5]/div[2]/div/div/div/div/div[4]"
@@ -124,7 +122,7 @@ class BbScripts:
                     "/html/body/div[5]/div[2]/div/div/div/div/div[3]"
                     "/form/div[2]/div[3]/div/table/tbody/tr/th/span[2]/a")
 
-            usermenu.click()
+            usermenu.send_keys(Keys.ENTER)
 
             modify_role = self.driver.find_element_by_id("cp_course_role_modify")
             modify_role.click()

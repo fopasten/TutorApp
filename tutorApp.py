@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QLabel, QLineEdit
     QTabWidget, QApplication, QComboBox, QTextEdit, \
     QPushButton, QHBoxLayout, QFileDialog
 
-from .selenium_scripts import BbScripts
+from selenium_scripts import BbScripts
 
 default_lan = windll.kernel32
 gui_language = locale.windows_locale[default_lan.GetUserDefaultUILanguage()]
