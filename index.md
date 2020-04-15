@@ -1,7 +1,7 @@
 ---
 title: Inicio
 layout: default
-filename: README.md
+filename: index.md
 --- 
 # Bienvenido a la Página de TutorApp
 
