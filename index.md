@@ -1,6 +1,6 @@
 ---
 title: Inicio
-layout: default
+layout: template
 filename: index.md
 --- 
 # Bienvenido a la Página de TutorApp
