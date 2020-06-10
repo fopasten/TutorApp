@@ -1,7 +1,8 @@
 from time import sleep
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, ElementNotInteractableException
+from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, ElementNotInteractableException, \
+                                       SessionNotCreatedException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
@@ -15,6 +16,10 @@ class BbScripts:
             chrome_options = Options()
             prefs = {"profile.managed_default_content_settings.images": 2}
             chrome_options.add_experimental_option("prefs", prefs)
+            # chrome_options.headless = True
+
+            self.updater_flag = False
+
             self.driver = webdriver.Chrome(options=chrome_options)
             self.driver.implicitly_wait(2)
 
@@ -36,8 +41,8 @@ class BbScripts:
             self.func_dict = {1: self.change_role,
                               2: self.disable_students,
                               3: self.change_date,
-                              4: self.post_announcements,
-                              5: self.disable_students_av}
+                              4: self.post_announcements
+                              }
 
             self.send_data_output("Entrando con credenciales proporcionadas")
 
@@ -48,18 +53,27 @@ class BbScripts:
             self.func_dict[func]()
         except NoSuchWindowException:
             self.send_data_output("Ventana cerrada")
+        except SessionNotCreatedException:
+            text = "Chrome ha sido actualizado y la versión actual no es soportada por la App tutores" \
+                   ", contactar al desarrollador para que faciliten la versión actualizada"
+            logger.info(text)
+            output(text)
+            self.updater_flag = True
         finally:
-            self.driver.close()
-            self.driver.quit()
+            if not self.updater_flag:
+                self.driver.close()
+                self.driver.quit()
 
     def send_data_output(self, text):
+        if self.logger is None and self.output is None:
+            print(text)
+            return
         self.logger.info(text)
         self.output(text)
         sleep(0.1)
 
     def login(self):
-        env = "unab"
-        self.driver.get("http://{}.blackboard.com".format(env))
+        self.driver.get("http://{}.blackboard.com".format(self.env))
 
         login_btn = self.driver.find_element_by_class_name("boton2")
         login_btn.send_keys(Keys.ENTER)
@@ -80,7 +94,9 @@ class BbScripts:
 
             self.send_data_output("Cambiando rol de {} a {} en el curso {}".format(user, role, course_name))
 
-            self.driver.get("https://unab.blackboard.com/webapps/blackboard/execute/courseManager?sourceType=COURSES")
+            courses_link = "https://{}.blackboard.com/webapps/blackboard/execute/courseManager?sourceType=COURSES"
+
+            self.driver.get(courses_link.format(self.env))
 
             course_id_opt = Select(self.driver.find_element_by_id("courseInfoSearchKeyString"))
             course_id_opt.select_by_value("CourseId")
@@ -100,7 +116,10 @@ class BbScripts:
                 course_id = course_id[:course_id.index("_1", course_id.index("_1") + 2) + 2]
             else:
                 course_id = course_id[:course_id.index("_1") + 2]
-            self.driver.get("https://unab.blackboard.com/webapps/blackboard/execute/userManager?" + course_id)
+
+            user_manager = "https://{}.blackboard.com/webapps/blackboard/execute/userManager?"
+
+            self.driver.get(user_manager.format(self.env) + course_id)
 
             search_operator = Select(self.driver.find_element_by_id("userInfoSearchOperatorString"))
             search_operator.select_by_value("Equals")
@@ -109,8 +128,6 @@ class BbScripts:
             user_text.clear()
             user_text.send_keys(user)
             user_text.send_keys(Keys.ENTER)
-
-            sleep(1)
 
             try:
                 usermenu = self.driver.find_element_by_xpath(
@@ -127,24 +144,25 @@ class BbScripts:
             modify_role = self.driver.find_element_by_id("cp_course_role_modify")
             modify_role.click()
 
-            role = self.driver.find_element_by_id(role)
-            role.send_keys(Keys.NULL)
-            role.click()
+            role_box = self.driver.find_element_by_id(role)
+            role_box.send_keys(Keys.NULL)
+            role_box.send_keys(Keys.SPACE)
 
             save = self.driver.find_element_by_id("bottom_Submit")
-            save.click()
+            save.send_keys(Keys.ENTER)
 
-            self.send_data_output("Completado con éxito")
+            self.send_data_output("Rol de {} cambiado a {} en el curso {} exitosamente".format(user, role, course_name))
 
     def disable_students(self):
         lines = parse(self.path)
         for course_name in lines:
-            self.send_data_output("Procesando {}".format(course_name))
+            self.send_data_output("Procesando curso {}".format(course_name))
             nrc = course_name[course_name.index("_") + 1:course_name.index("_", course_name.index("_") + 1)]
             term = course_name[:course_name.index("_")]
 
             user_list = []
             user_listbb = []
+            user_disabled = []
 
             self.driver.get(
                 "http://ssb.unab.cl:9027/pls/PROD/bwwreplistados_cursos.lista_curso3?" +
@@ -169,8 +187,9 @@ class BbScripts:
 
             self.send_data_output("Se han encontrado {} estudiantes en la lista de Banner".format(len(user_list)))
 
-            self.driver.get(
-                "https://unab.blackboard.com/webapps/blackboard/execute/courseManager?sourceType=COURSES")
+            courses_link = "https://{}.blackboard.com/webapps/blackboard/execute/courseManager?sourceType=COURSES"
+
+            self.driver.get(courses_link.format(self.env))
 
             course_id_opt = Select(self.driver.find_element_by_id("courseInfoSearchKeyString"))
             course_id_opt.select_by_value("CourseId")
@@ -191,8 +210,9 @@ class BbScripts:
             else:
                 course_id = course_id[:course_id.index("_1") + 2]
 
-            self.driver.get(
-                "https://unab.blackboard.com/webapps/blackboard/execute/userManager?{}".format(course_id))
+            user_manager = "https://{}.blackboard.com/webapps/blackboard/execute/userManager?"
+
+            self.driver.get(user_manager.format(self.env) + course_id)
 
             try:
                 show_all = self.driver.find_element_by_id('listContainer_showAllButton')
@@ -206,13 +226,22 @@ class BbScripts:
             for row in rows:
                 col1 = row.find_element_by_tag_name('th')
                 col1 = col1.find_element_by_tag_name('span')
-                col5 = row.find_elements_by_tag_name('td')[4]
-                col5 = col5.find_elements_by_tag_name('span')[1]
+                cols = row.find_elements_by_tag_name('td')
+                role_col = cols[4]
+                course_role = role_col.find_elements_by_tag_name('span')[1]
+                avl_col = cols[6]
+                available_ind = avl_col.find_elements_by_tag_name('span')[1]
                 username = col1.text
-                if "Student" in col5.text or "Estudiante" in col5.text:
+                if "Student" in course_role.text or "Estudiante" in course_role.text:
                     if "_preview" not in username:
                         username = str(col1.text).strip()
                         user_listbb.append(username)
+                        if available_ind.text == "Sí" or available_ind.text == "Yes":
+                            pass
+                        elif available_ind.text == "No":
+                            user_disabled.append(username)
+                        else:
+                            self.send_data_output("Estudiante {} no tiene marca debe ser revisado".format(username))
 
             self.send_data_output("Se han encontrado {} estudiantes en la lista de Blackboard".format(len(user_listbb)))
 
@@ -220,8 +249,20 @@ class BbScripts:
 
             self.send_data_output("Ajustando diferencia de {} estudiantes en Blackboard".format(len(list_difference)))
 
+            if len(user_disabled) > 0:
+                self.send_data_output("{} usuarios ya se encuentran deshabilitados:\n".format(
+                    len(user_disabled)) + ("{}\n" * len(user_disabled)).format(*user_disabled))
+                list_difference = [item for item in list_difference if item not in user_disabled]
+
+            if len(list_difference) == 0:
+                self.send_data_output("Curso {} completado, los usuarios ya estaban deshabilitados".format(
+                    course_name))
+                continue
+
             for user in list_difference:
-                self.driver.get("https://unab.blackboard.com/webapps/blackboard/execute/userManager?" + course_id)
+                user_manager = "https://{}.blackboard.com/webapps/blackboard/execute/userManager?"
+
+                self.driver.get(user_manager.format(self.env) + course_id)
 
                 search_operator = Select(self.driver.find_element_by_id("userInfoSearchOperatorString"))
                 search_operator.select_by_value("Equals")
@@ -263,7 +304,7 @@ class BbScripts:
                                   + ("{}\n" * len(list_difference)).format(*list_difference))
 
     def change_date(self):
-        properties = "https://unab.blackboard.com/webapps/blackboard/execute/cp/courseProperties?" \
+        properties = "https://{}.blackboard.com/webapps/blackboard/execute/cp/courseProperties?" \
                      "dispatch=editProperties&family=cp_edit_properties&{}"
         lines = parse(self.path)
         for elem in lines:
@@ -294,7 +335,7 @@ class BbScripts:
             else:
                 course_id = course_id[:course_id.index("_1") + 2]
 
-            self.driver.get(properties.format(course_id))
+            self.driver.get(properties.format(self.env, course_id))
 
             end_date_chk = self.driver.find_element_by_id("end_duration")
             end_date_chk.send_keys(Keys.NULL)  # Focus
@@ -395,6 +436,43 @@ class BbScripts:
                     insert_btn.click()
 
                     self.driver.switch_to.window(old_window)
+            elif post_type == "HTML":
+                try:
+                    insert_html = self.driver.find_element_by_xpath("/html/body/div[5]/div[2]/div/div/div/div/div["
+                                                                    "2]/form/div/div[2]/div/ol/li[2]/div["
+                                                                    "2]/table/tbody/tr/td/span[2]/table/tbody/tr["
+                                                                    "1]/td/div/span/div[2]/table[3]/tbody/tr/td[28]")
+                    insert_html.click()
+                except ElementNotInteractableException:
+                    self.driver.find_element_by_id("messagetext_bb_slidercontrol").click()
+                    sleep(0.2)
+                    insert_html = self.driver.find_element_by_xpath("/html/body/div[5]/div[2]/div/div/div/div/div["
+                                                                    "2]/form/div/div[2]/div/ol/li[2]/div["
+                                                                    "2]/table/tbody/tr/td/span[2]/table/tbody/tr["
+                                                                    "1]/td/div/span/div[2]/table[3]/tbody/tr/td[28]")
+                    insert_html.click()
+                self.send_data_output("Insertando código HTML en ventana emergente")
+                old_window = self.driver.window_handles[0]
+                new_window = self.driver.window_handles[1]
+
+                self.driver.switch_to.window(new_window)
+                html = self.driver.find_element_by_id("htmlSource")
+                html.click()
+                html.clear()
+
+                relative_path = self.path[:self.path.rindex("/") + 1]
+
+                hmtl_file = open(relative_path + url_txt, encoding="utf-8", mode="r")
+
+                complete_html_file = hmtl_file.read()
+                complete_html_file = complete_html_file.replace("\n", "")
+
+                html.send_keys(complete_html_file)
+
+                insert_btn = self.driver.find_element_by_id("insert")
+                insert_btn.click()
+
+                self.driver.switch_to.window(old_window)
             elif post_type == "TEXT":
                 self.driver.switch_to.frame("messagetext_ifr")
                 body = self.driver.find_element_by_xpath('html/body')
@@ -411,139 +489,9 @@ class BbScripts:
 
             self.send_data_output("Publicado!")
 
-    def disable_students_av(self):
-        lines = parse(self.path)
-        for course_name in lines:
-            self.send_data_output("Procesando {}".format(course_name))
-            term = course_name[course_name.index(".") + 1:]
-            nrc = term[term.index(".") + 1:]
-            nrc = nrc[:nrc.index(".")]
-            term = term[:term.index(".")]
-
-            user_list = []
-            user_listbb = []
-
-            self.driver.get(
-                "http://ssb.unab.cl:9027/pls/PROD/bwwreplistados_cursos.lista_curso3?" +
-                "periodo={}&".format(term) +
-                "nrc={}&".format(nrc) +
-                "cod_actividad=TEO")
-
-            try:
-                n = 5
-                while True:
-
-                    table_id = self.driver.find_element_by_xpath('/html/body/table[{0}]'.format(n))
-                    rows = table_id.find_elements_by_tag_name('tr')
-
-                    for row in rows:
-                        col = row.find_elements_by_tag_name('td')
-                        username = col[3]
-                        user_list.append(username.text)
-                    n += 5
-            except NoSuchElementException:
-                pass
-
-            self.send_data_output("Se han encontrado {} estudiantes en la lista de Banner".format(len(user_list)))
-
-            self.driver.get(
-                "https://unab.blackboard.com/webapps/blackboard/execute/courseManager?sourceType=COURSES")
-
-            course_id_opt = Select(self.driver.find_element_by_id("courseInfoSearchKeyString"))
-            course_id_opt.select_by_value("CourseId")
-
-            text_box = self.driver.find_element_by_id("courseInfoSearchText")
-            text_box.clear()
-            text_box.send_keys(course_name)
-            text_box.send_keys(Keys.ENTER)
-
-            course = self.driver.find_element_by_link_text(course_name)
-            course.click()
-
-            current = self.driver.current_url
-            course_id = current[current.index("course_id="):]
-
-            if "course_id=_1" in course_id:
-                course_id = course_id[:course_id.index("_1", course_id.index("_1") + 2) + 2]
-            else:
-                course_id = course_id[:course_id.index("_1") + 2]
-
-            self.driver.get(
-                "https://unab.blackboard.com/webapps/blackboard/execute/userManager?{}".format(course_id))
-
-            try:
-                show_all = self.driver.find_element_by_id('listContainer_showAllButton')
-                show_all.send_keys(Keys.ENTER)
-            except NoSuchElementException:
-                pass
-
-            table_id = self.driver.find_element_by_id("listContainer_databody")
-            rows = table_id.find_elements_by_tag_name("tr")
-
-            for row in rows:
-                col1 = row.find_element_by_tag_name('th')
-                col1 = col1.find_element_by_tag_name('span')
-                col5 = row.find_elements_by_tag_name('td')[4]
-                col5 = col5.find_elements_by_tag_name('span')[1]
-                username = col1.text
-                if "Student" in col5.text or "Estudiante" in col5.text:
-                    if "_preview" not in username:
-                        username = str(col1.text).strip()
-                        user_listbb.append(username)
-
-            self.send_data_output(
-                "Se han encontrado {} estudiantes en la lista de Blackboard".format(len(user_listbb)))
-
-            list_difference = [item for item in user_listbb if item not in user_list]
-
-            self.send_data_output(
-                "Ajustando diferencia de {} estudiantes en Blackboard".format(len(list_difference)))
-
-            for user in list_difference:
-                self.driver.get("https://unab.blackboard.com/webapps/blackboard/execute/userManager?" + course_id)
-
-                search_operator = Select(self.driver.find_element_by_id("userInfoSearchOperatorString"))
-                search_operator.select_by_value("Equals")
-
-                user_text = self.driver.find_element_by_id("search_text")
-                user_text.clear()
-                user_text.send_keys(user)
-                user_text.send_keys(Keys.ENTER)
-
-                try:
-                    usermenu = self.driver.find_element_by_xpath(
-                        "/html/body/div[5]/div[2]/div/div/div/div/div[4]"
-                        "/form/div[2]/div[3]/div/table/tbody/tr/th/span[2]/a")
-
-                except NoSuchElementException:
-                    usermenu = self.driver.find_element_by_xpath(
-                        "/html/body/div[5]/div[2]/div/div/div/div/div[3]"
-                        "/form/div[2]/div[3]/div/table/tbody/tr/th/span[2]/a")
-
-                usermenu.click()
-
-                modify_role = self.driver.find_element_by_id("cp_course_availability")
-                modify_role.click()
-
-                available = Select(self.driver.find_element_by_id("availableIndex"))
-                available.select_by_value("false")
-
-                save = self.driver.find_element_by_id("bottom_Submit")
-                save.click()
-
-            search_operator = Select(self.driver.find_element_by_id("userInfoSearchOperatorString"))
-            search_operator.select_by_value("NotBlank")
-
-            user_text = self.driver.find_element_by_id("search_text")
-            user_text.clear()
-            user_text.send_keys(Keys.ENTER)
-            self.send_data_output("Curso {} completado, {} usuarios deshabilitados:\n".format(
-                course_name, len(list_difference))
-                                  + ("{}\n" * len(list_difference)).format(*list_difference))
-
 
 if __name__ == '__main__':
-    file = 'test_anuncios.txt'
-    thing = BbScripts("usuario186", "123456", func=4, path=file)
+    file = "../test_cursos.txt"
+    thing = BbScripts("usuario186", "123456", func=2, path=file)
     # thing.change_role("test.txt")
     # thing.disable_students(file)

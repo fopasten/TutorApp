@@ -41,5 +41,3 @@ def parse(path):
 
 if __name__ == '__main__':
     print(parse(filetxt))
-    print(parse(filecsv))
-    print(parse(test_tt))

@@ -1,8 +1,10 @@
 import locale
 import logging
 import sys
+
 from ctypes import windll
 from json import dump, load
+from time import sleep
 
 from PyQt5.QtCore import QRunnable, QThreadPool, Qt, pyqtSlot
 from PyQt5.QtGui import QPixmap, QIcon
@@ -15,7 +17,7 @@ from selenium_scripts import BbScripts
 default_lan = windll.kernel32
 gui_language = locale.windows_locale[default_lan.GetUserDefaultUILanguage()]
 
-logging.basicConfig(filename="../log.txt", level=logging.INFO, format='%(asctime)s - %(message)s')
+logging.basicConfig(filename="./log.txt", level=logging.INFO, format='%(asctime)s - %(message)s')
 
 es_ES = {"select_lms": "Selecciona Plataforma: ",
          "select_script": "Selecciona Acción:",
@@ -57,7 +59,6 @@ es_ES = {"select_lms": "Selecciona Plataforma: ",
               2: "Ajustar Listas",
               3: "Ajustar Cierre de Curso",
               4: "Enviar Anuncios",
-              5: "Ajustar Listas AV"
               },
          "bb_user": "Blackboard",
          "bb_user_label": "Ingresa tu usuario y contraseña:",
@@ -96,8 +97,8 @@ en_US = {"select_lms": "Select LMS: ",
                                    "is required:</p> "
                                    "<p>COURSE_ID_1<br>COURSE_ID_2<br>...</p>"
                                    "<h4>Adjust Course Closing Date</h4>"
-                                   "<p>Para ajustar el cierre del curso se debe indicar el NRC del curso y el "
-                                   "indicador de apertura (Y) o cierre (N)</p> "
+                                   "<p>To adjust de end date of a course it is required to enter the course_id and "
+                                   "indicate if it must be open (Y) or closed (N)</p>"
                                    "<p>COURSE_ID_1   Y<br>COURSE_ID_2   N</p>"},
          "script_options":
              {0: "",
@@ -120,7 +121,7 @@ class UNABScripts(QMainWindow):
         self.setGeometry(300, 200, 350, 600)
         self.setFixedSize(350, 600)
 
-        self.setWindowTitle('App Tutores v1')
+        self.setWindowTitle('App Tutores v1.0.2')
 
         self.setWindowIcon(QIcon('./icon.png'))
 
@@ -149,6 +150,7 @@ class UNABScripts(QMainWindow):
         data = self.TabsWidget.save_data()
         with open('savefile.json', 'w') as f:
             dump(data, f)
+        self.threadpool.clear()
 
 
 class TabsWidget(QWidget):
@@ -403,6 +405,11 @@ class TabsWidget(QWidget):
     #     self.dlwd_path.setToolTip(str(self.dlwd_path.text()))
 
     def exec_script(self):
+        btn_ctrl = Worker(self.wait_click)
+        self.threadpool.start(btn_ctrl)
+        if self.bb_username.text() == "" or self.bb_pass.text() == "" or self.csv_path.text() == "":
+            self.send_output("No se ha introducido credenciales o dirección de archivo.")
+            return
         if self.cboxLMS.currentText() == "Blackboard":
             username = self.bb_username.text()
             password = self.bb_pass.text()
@@ -436,6 +443,16 @@ class TabsWidget(QWidget):
         self.csv_path.setText(file["path"])
         self.cboxLMS.setCurrentText(file["lms"])
         self.cboxScript.setCurrentText(file["script"])
+
+    def wait_click(self):
+        self.runbtn.setDisabled(True)
+        text = self.runbtn.text()
+        total = 5
+        for x in range(6):
+            self.runbtn.setText(text + " (0.{})".format(total-x))
+            sleep(0.1)
+        self.runbtn.setText(text)
+        self.runbtn.setEnabled(True)
 
 
 class Worker(QRunnable):
