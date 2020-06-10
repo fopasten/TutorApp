@@ -1,3 +1,8 @@
+---
+title: Inicio
+layout: template
+filename: index.md
+--- 
 # Bienvenido a la Página de TutorApp
 
 En esta sección encontrarás información sobre el uso de la app y todas las versiones publicadas.
