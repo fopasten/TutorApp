@@ -1,2 +1,14 @@
 /savefile.json
 /chromedriver80.exe
+/chromedriver83.exe
+/TutorApp
+/log.txt
+/Archivo ajuste de listas.txt
+/Archivo anuncios.txt
+/_config.yml
+/upx
+/.vscode
+/.idea
+/__pycache__
+/__init__.py
+/test.py

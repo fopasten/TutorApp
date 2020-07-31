@@ -28,16 +28,15 @@ def parse(path):
         for line in line_file:
             line = line.replace("\ufeff", "")
             line = line.replace("\n", "")
-            line = line.replace(" ", "")
+            line = line.strip(" ")
             parsed_file.append(line)
         return parsed_file
     for line in line_file:
         line = line.replace("\ufeff", "")
         line = line.replace("\n", "")
-        line = line.replace(" ", "")
-        parsed_file.append(line.split(char))
+        parsed_file.append([element.strip(" ") for element in line.split(char)])
     return parsed_file
 
 
 if __name__ == '__main__':
-    print(parse(filetxt))
+    print(parse("Archivo anuncios.txt"))

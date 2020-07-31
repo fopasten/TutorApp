@@ -5,12 +5,12 @@ block_cipher = None
 
 a = Analysis(['TutorApp.py'],
              pathex=['C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-RELEASES\\TutorApp'],
-             binaries=[('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-RELEASES\\TutorApp\\chromedriver.exe','.')],
+             binaries=[],
              datas=[ ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-RELEASES\\TutorApp\\banner.png', '.'), ('C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-RELEASES\\TutorApp\\icon.png', '.') ],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
-             excludes=['matplotlib', 'scipy', 'setuptools', 'hook', 'distutils', 'site', 'hooks', 'tornado', 'PIL', 'PyQt4', 'pydoc', 'pythoncom', 'pytz', 'pywintypes', 'sqlite3', 'pyz', 'pandas', 'sklearn', 'scapy', 'scrapy', 'sympy', 'kivy', 'pyramid', 'opencv', 'tensorflow', 'pipenv', 'pattern', 'mechanize', 'beautifulsoup4', 'requests', 'wxPython', 'pygi', 'pillow', 'pygame', 'pyglet', 'flask', 'django', 'pylint', 'pytube', 'odfpy', 'mccabe', 'pilkit', 'six', 'wrapt', 'astroid', 'isort'],
+             excludes=['matplotlib','colorama', 'toml', 'lazy-object-proxy', 'scipy', 'setuptools', 'hook', 'distutils', 'site', 'hooks', 'tornado', 'PIL', 'PyQt4', 'pydoc', 'pythoncom', 'pytz', 'pywintypes', 'sqlite3', 'pyz', 'pandas', 'sklearn', 'scapy', 'scrapy', 'sympy', 'kivy', 'pyramid', 'opencv', 'tensorflow', 'pipenv', 'pattern', 'mechanize', 'beautifulsoup4', 'requests', 'wxPython', 'pygi', 'pillow', 'pygame', 'pyglet', 'flask', 'django', 'pylint', 'pytube', 'odfpy', 'mccabe', 'pilkit', 'six', 'wrapt', 'astroid', 'isort'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
@@ -23,11 +23,14 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas,
           [],
-          name='TutorApp v1.0.2',
+          name='TutorApp v1.0.3',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
           runtime_tmpdir=None,
-          console=False )
+          console=False,
+		  icon='C:\\Users\\felipe.pasten\\OneDrive - UNIVERSIDAD ANDRES BELLO\\Repositorio_Felipe_Pasten\\Tecnologías para el Aprendizaje\\PYTHON-RELEASES\\TutorApp\\icon.ico')
+
+import shutil
+shutil.copyfile('chromedriver.exe', '{0}/chromedriver.exe'.format(DISTPATH))
