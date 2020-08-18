@@ -76,6 +76,7 @@ es_ES = {
         2: "Ajustar Listas",
         3: "Ajustar Cierre de Curso",
         4: "Enviar Anuncios",
+        5: "Contacto Tutoría"
     },
     "bb_user": "Blackboard",
     "bb_user_label": "Ingresa tu usuario y contraseña:",
@@ -126,6 +127,7 @@ en_US = {
         2: "Adjust List",
         3: "Adjust Course Ending",
         4: "Post Announcements",
+        5: "Post Tutor Info"
     },
     "bb_user": "Blackboard",
     "bb_user_label": "Enter User and Password:",
@@ -149,7 +151,7 @@ class UNABScripts(QMainWindow):
         self.setGeometry(300, 200, 350, 600)
         self.setFixedSize(350, 600)
 
-        self.setWindowTitle("App Tutores v1.0.3")
+        self.setWindowTitle("App Tutores v1.0.4")
 
         self.setWindowIcon(QIcon("./icon.png"))
 
@@ -519,16 +521,16 @@ class TabsWidget(QWidget):
                 logger=logging,
                 output=self.send_output,
             )
-        # elif self.cboxScript.currentText() == self.lang_dict["script_options"][5]:
-        #     worker = Worker(
-        #         BbScripts,
-        #         username,
-        #         password,
-        #         path=self.csv_path.text(),
-        #         func=5,
-        #         logger=logging,
-        #         output=self.send_output,
-        #     )
+        elif self.cboxScript.currentText() == self.lang_dict["script_options"][5]:
+            worker = Worker(
+                BbScripts,
+                username,
+                password,
+                path=self.csv_path.text(),
+                func=5,
+                logger=logging,
+                output=self.send_output,
+            )
         self.threadpool.start(worker)
 
     def save_data(self):
@@ -570,7 +572,6 @@ class Worker(QRunnable):
     def run(self):
         self.function(*self.args, **self.kwargs)
         self.autoDelete()
-
 
 if __name__ == "__main__":
     app = QApplication([])
