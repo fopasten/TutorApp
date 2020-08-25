@@ -8,6 +8,7 @@ from selenium.common.exceptions import (
     NoSuchWindowException,
     ElementNotInteractableException,
     SessionNotCreatedException,
+    ElementClickInterceptedException,
 )
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -53,6 +54,7 @@ class BbScripts:
                 2: self.disable_students,
                 3: self.change_date,
                 4: self.post_announcements,
+                5: self.post_tutor_info,
             }
 
             self.url_dict = {
@@ -70,7 +72,10 @@ class BbScripts:
                 "announcements":
                     "https://unab.blackboard.com/webapps/blackboard/execute/announcement?"
                     "method=search&editMode=true&viewChoice=2&{}&"
-                    "context=course&internalHandle=cp_announcements"
+                    "context=course&internalHandle=cp_announcements",
+                "tutor_info":
+                "https://unab.blackboard.com/bbcswebdav/institution/Plan_z_matematicas/_/"
+                "fichas_tutores/{}.jpg".format(username)
             }
 
             self.send_data_output("Entrando con credenciales proporcionadas")
@@ -171,7 +176,8 @@ class BbScripts:
 
         for row in rows:
             col1 = row.find_element_by_tag_name("th")
-            col1 = col1.find_element_by_tag_name("span") # TODO try to use .text here to save 1 line
+            # TODO try to use .text here to save 1 line
+            col1 = col1.find_element_by_tag_name("span")
             cols = row.find_elements_by_tag_name("td")
             role_col = cols[4]
             course_role = role_col.find_elements_by_tag_name("span")[1]
@@ -238,7 +244,8 @@ class BbScripts:
 
             self.driver.get(self.url_dict["courses"].format(self.env))
 
-            self.change_combo_box_value("courseInfoSearchKeyString", "CourseId")
+            self.change_combo_box_value(
+                "courseInfoSearchKeyString", "CourseId")
 
             self.search_bar("courseInfoSearchText", course_name)
 
@@ -249,7 +256,8 @@ class BbScripts:
             self.driver.get("https://{}.blackboard.com/webapps/blackboard/execute/userManager?"
                             .format(self.env) + course_id)
 
-            self.change_combo_box_value("userInfoSearchOperatorString", "Equals")
+            self.change_combo_box_value(
+                "userInfoSearchOperatorString", "Equals")
 
             self.search_bar("search_text", user)
 
@@ -292,7 +300,8 @@ class BbScripts:
 
             self.driver.get(self.url_dict["courses"].format(self.env))
 
-            self.change_combo_box_value("courseInfoSearchKeyString", "CourseId")
+            self.change_combo_box_value(
+                "courseInfoSearchKeyString", "CourseId")
 
             self.search_bar("courseInfoSearchText", course_id)
 
@@ -300,7 +309,8 @@ class BbScripts:
 
             pk1 = self.get_course_id(self.driver.current_url)
 
-            self.driver.get(self.url_dict["user_manager"].format(self.env, pk1))
+            self.driver.get(
+                self.url_dict["user_manager"].format(self.env, pk1))
 
             self.list_show_all()
 
@@ -318,7 +328,8 @@ class BbScripts:
                     "{} usuarios ya se encuentran deshabilitados:\n".format(
                         len(user_disabled))
                     + ("{}\n" * len(user_disabled)).format(*user_disabled))
-                list_difference = [item for item in list_difference if item not in user_disabled]
+                list_difference = [
+                    item for item in list_difference if item not in user_disabled]
 
             if len(list_difference) == 0:
                 self.send_data_output(
@@ -327,9 +338,11 @@ class BbScripts:
                 continue
 
             for user in list_difference:
-                self.driver.get(self.url_dict["user_manager"].format(self.env, pk1))
+                self.driver.get(
+                    self.url_dict["user_manager"].format(self.env, pk1))
 
-                self.change_combo_box_value("userInfoSearchOperatorString", "Equals")
+                self.change_combo_box_value(
+                    "userInfoSearchOperatorString", "Equals")
 
                 self.search_bar("search_text", user)
 
@@ -355,7 +368,8 @@ class BbScripts:
 
                 self.submit_changes("bottom_Submit")
 
-            self.change_combo_box_value("userInfoSearchOperatorString", "NotBlank")
+            self.change_combo_box_value(
+                "userInfoSearchOperatorString", "NotBlank")
 
             self.search_bar("search_text")
 
@@ -376,7 +390,8 @@ class BbScripts:
 
             self.driver.get(self.url_dict["courses"].format(self.env))
 
-            self.change_combo_box_value("courseInfoSearchKeyString", "CourseId")
+            self.change_combo_box_value(
+                "courseInfoSearchKeyString", "CourseId")
 
             self.search_bar("courseInfoSearchText", course_name)
 
@@ -384,7 +399,8 @@ class BbScripts:
 
             course_id = self.get_course_id(self.driver.current_url)
 
-            self.driver.get(self.url_dict["properties"].format(self.env, course_id))
+            self.driver.get(
+                self.url_dict["properties"].format(self.env, course_id))
 
             end_date_chk = self.driver.find_element_by_id("end_duration")
             end_date_chk.send_keys(Keys.NULL)  # Focus
@@ -420,7 +436,8 @@ class BbScripts:
 
             self.driver.get(self.url_dict["courses"].format(self.env))
 
-            self.change_combo_box_value("courseInfoSearchKeyString", "CourseId")
+            self.change_combo_box_value(
+                "courseInfoSearchKeyString", "CourseId")
 
             self.search_bar("courseInfoSearchText", course_name)
 
@@ -549,9 +566,133 @@ class BbScripts:
 
             self.send_data_output("Publicado!")
 
+    def post_tutor_info(self):
+        lines = parse(self.path)
+        for course_id in lines:
+
+            self.send_data_output(
+                "Publicando ficha de tutor {} en curso {}".format(
+                    self.username, course_id)
+            )
+
+            self.driver.get(self.url_dict["courses"].format(self.env))
+
+            self.change_combo_box_value(
+                "courseInfoSearchKeyString", "CourseId")
+
+            self.search_bar("courseInfoSearchText", course_id)
+
+            self.click_text_link(course_id)
+
+            edit_mode = self.driver.find_element_by_id('statusText')
+
+            if edit_mode.get_attribute('innerHTML') == 'DESACTIVADO':
+                edit_mode.click()
+                sleep(0.5)
+
+            sleep(1)
+
+            menu_puller = self.driver.find_element_by_id('menuPuller')
+
+            if menu_puller.get_attribute('title') == 'Mostrar menú Curso':
+                menu_puller.click()
+                sleep(0.5)
+
+            plus = self.driver.find_element_by_id('addCmItem')
+            plus.click()
+
+            sleep(1)
+
+            content_item = self.driver.find_element_by_id(
+                'addContentAreaButton')
+            content_item.send_keys(Keys.ENTER)
+
+            content_name = self.driver.find_element_by_id('addContentAreaName')
+            content_name.send_keys("Contacto Tutoría")
+
+            content_availabilty = self.driver.find_element_by_id(
+                'content_area_availability_ckbox')
+            content_availabilty.send_keys(Keys.SPACE)
+
+            try:
+                submit = self.driver.find_element_by_id('addContentAreaFormSubmit')
+                submit.send_keys(Keys.ENTER)
+                self.driver.find_element_by_link_text('Contacto Tutoría').click()
+            except ElementClickInterceptedException:
+                self.driver.find_element_by_id('addContentAreaFormCancel').click()
+                self.driver.find_element_by_link_text('Contacto Tutoría').click()
+
+            self.driver.find_element_by_xpath(
+                '/html/body/div[5]/div[2]/div/div/div/div/div[1]/div/span[1]/a').click()
+
+            text_only = self.driver.find_element_by_xpath('/html/body/div[7]/ul/li[5]/a')
+
+            if text_only.get_attribute('title') == 'Mostrar solo texto':
+                self.driver.get(text_only.get_attribute('href'))
+
+            add_element = self.driver.find_element_by_id(
+                'content-handler-resource/x-bb-document')
+            self.driver.get(add_element.get_attribute('href'))
+
+            elem_title = self.driver.find_element_by_id("user_title")
+            elem_title.send_keys('Contacto Tutoría')
+
+            self.driver.execute_script("window.scrollTo(0, 300)")
+
+            sleep(3)
+
+            try:
+                insert_image = self.driver.find_element_by_xpath(
+                    "/html/body/div[5]/div[2]/div/div/div/div/div["
+                    "2]/form/div/div[2]/div/ol/li[3]/div["
+                    "2]/table/tbody/tr/td/span[2]/table/tbody/tr["
+                    "1]/td/div/span/div[2]/table[3]/tbody/tr/td[4]"
+                )
+                insert_image.click()
+            except ElementNotInteractableException:
+                self.driver.find_element_by_id(
+                    "messagetext_bb_slidercontrol"
+                ).click()
+                sleep(0.2)
+                insert_image = self.driver.find_element_by_xpath(
+                    "/html/body/div[5]/div[2]/div/div/div/div/div["
+                    "2]/form/div/div[2]/div/ol/li[3]/div["
+                    "2]/table/tbody/tr/td/span[2]/table/tbody/tr["
+                    "1]/td/div/span/div[2]/table[3]/tbody/tr/td[4]"
+                )
+                insert_image.click()
+            finally:
+                self.send_data_output(
+                    "Adjuntando URL de IMG en ventana emergente")
+                old_window = self.driver.window_handles[0]
+                new_window = self.driver.window_handles[1]
+
+                self.driver.switch_to.window(new_window)
+                img_text = self.driver.find_element_by_id(
+                    "imagepackage_selectedCSFilePath"
+                )
+                img_text.send_keys(self.url_dict['tutor_info'])
+
+                alt = self.driver.find_element_by_id("alt")
+                alt.send_keys(".")
+
+                title = self.driver.find_element_by_id("title")
+                title.send_keys(".")
+
+                insert_btn = self.driver.find_element_by_id("insert")
+                insert_btn.click()
+
+                self.driver.switch_to.window(old_window)
+
+            self.submit_changes('bottom_Submit')
+
+            self.send_data_output('Publicada!')
+
+            sleep(1)
+
 
 if __name__ == "__main__":
-    FILE = "Archivo anuncios.txt"
-    thing = BbScripts("usuario186", "123456", func=4, path=FILE)
+    FILE = "prueba.txt"
+    thing = BbScripts("usuario186", "123456", func=5, path=FILE)
     # thing.change_role("test.txt")
     # thing.disable_students(file)
