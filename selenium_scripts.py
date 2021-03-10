@@ -23,82 +23,85 @@ class BbScripts:
 
     def __init__(self, username, password, func=None, path=None,
                  logger=None, output=None, env=None):
-        try:
-            chrome_options = Options()
-            prefs = {"profile.managed_default_content_settings.images": 2}
-            chrome_options.add_experimental_option("prefs", prefs)
-            # chrome_options.headless = True
+        while True:
+            try:
+                chrome_options = Options()
+                prefs = {"profile.managed_default_content_settings.images": 2}
+                chrome_options.add_experimental_option("prefs", prefs)
+                # chrome_options.headless = True
 
-            self.updater_flag = False
+                self.updater_flag = False
 
-            self.driver = webdriver.Chrome(options=chrome_options)
-            self.driver.implicitly_wait(2)
+                self.driver = webdriver.Chrome(options=chrome_options)
+                self.driver.implicitly_wait(2)
 
-            if env is None:
-                self.env = "unab"
-            else:
-                self.env = env
+                if env is None:
+                    self.env = "unab"
+                else:
+                    self.env = env
 
-            self.logger = logger
-            self.output = output
+                self.logger = logger
+                self.output = output
 
-            self.path = path
+                self.path = path
 
-            self.username = username
-            self.password = password
+                self.username = username
+                self.password = password
 
-            self.send_data_output("Lanzando navegador")
+                self.send_data_output("Lanzando navegador")
 
-            self.func_dict = {
-                1: self.change_role,
-                2: self.disable_students,
-                3: self.change_date,
-                4: self.post_announcements,
-                5: self.post_tutor_info,
-            }
+                self.func_dict = {
+                    1: self.change_role,
+                    2: self.disable_students,
+                    3: self.change_date,
+                    4: self.post_announcements,
+                    5: self.post_tutor_info,
+                }
 
-            self.url_dict = {
-                "courses":
-                    "https://{}.blackboard.com/webapps/blackboard/execute/courseManager"
-                    "?sourceType=COURSES",
-                "properties":
-                    "https://{}.blackboard.com/webapps/blackboard/execute/cp/courseProperties?"
-                    "dispatch=editProperties&family=cp_edit_properties&{}",
-                "course_ws":
-                    "http://ssb.unab.cl:9027/pls/PROD/bwwreplistados_cursos.lista_curso3?"
-                    "periodo={}&nrc={}&cod_actividad=TEO",
-                "user_manager":
-                    "https://{}.blackboard.com/webapps/blackboard/execute/userManager?{}",
-                "announcements":
-                    "https://unab.blackboard.com/webapps/blackboard/execute/announcement?"
-                    "method=search&editMode=true&viewChoice=2&{}&"
-                    "context=course&internalHandle=cp_announcements",
-                "tutor_info":
-                "https://unab.blackboard.com/bbcswebdav/institution/Plan_z_matematicas/_/"
-                "fichas_tutores/{}.jpg".format(username)
-            }
+                self.url_dict = {
+                    "courses":
+                        "https://{}.blackboard.com/webapps/blackboard/execute/courseManager"
+                        "?sourceType=COURSES",
+                    "properties":
+                        "https://{}.blackboard.com/webapps/blackboard/execute/cp/courseProperties?"
+                        "dispatch=editProperties&family=cp_edit_properties&{}",
+                    "course_ws":
+                        "http://ssb.unab.cl:9027/pls/PROD/bwwreplistados_cursos.lista_curso3?"
+                        "periodo={}&nrc={}&cod_actividad=TEO",
+                    "user_manager":
+                        "https://{}.blackboard.com/webapps/blackboard/execute/userManager?{}",
+                    "announcements":
+                        "https://unab.blackboard.com/webapps/blackboard/execute/announcement?"
+                        "method=search&editMode=true&viewChoice=2&{}&"
+                        "context=course&internalHandle=cp_announcements",
+                    "tutor_info":
+                    "https://unab.blackboard.com/bbcswebdav/institution/Plan_z_matematicas/_/"
+                    "fichas_tutores/{}.jpg".format(username)
+                }
 
-            self.send_data_output("Entrando con credenciales proporcionadas")
+                self.send_data_output("Entrando con credenciales proporcionadas")
 
-            self.login()
+                self.login()
 
-            self.send_data_output("Ejecutando script")
+                self.send_data_output("Ejecutando script")
 
-            self.func_dict[func]()
-        except NoSuchWindowException:
-            self.send_data_output("Ventana cerrada")
-        except SessionNotCreatedException:
-            text = (
-                "Chrome ha sido actualizado y la versión actual no es soportada por la App tutores"
-                ", contactar al desarrollador para que faciliten la versión actualizada"
-            )
-            logger.info(text)
-            output(text)
-            self.updater_flag = True
-        finally:
-            if not self.updater_flag:
-                self.driver.close()
-                self.driver.quit()
+                self.func_dict[func]()
+
+                break
+            except NoSuchWindowException:
+                self.send_data_output("Ventana cerrada")
+            except SessionNotCreatedException:
+                text = (
+                    "Chrome ha sido actualizado y la versión actual no es soportada por la App tutores"
+                    ", contactar al desarrollador para que faciliten la versión actualizada"
+                )
+                logger.info(text)
+                output(text)
+                self.updater_flag = True
+            finally:
+                if not self.updater_flag:
+                    self.driver.close()
+                    self.driver.quit()
 
     def send_data_output(self, text):
         if self.logger is None and self.output is None:

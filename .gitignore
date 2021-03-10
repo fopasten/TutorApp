@@ -1,6 +1,5 @@
 /savefile.json
-/chromedriver80.exe
-/chromedriver83.exe
+chromedriver*.exe
 /TutorApp
 /log.txt
 /Archivo ajuste de listas.txt
@@ -11,6 +10,9 @@
 /.idea
 /__pycache__
 /__init__.py
-/test.py
+/test*.py
 /prueba.txt
 /pk1s.txt
+dist
+build
+*.spec

@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
 )
 
 from selenium_scripts import BbScripts
+from validate_webdriver import validate_chromewebdriver 
 
 default_lan = windll.kernel32
 gui_language = locale.windows_locale[default_lan.GetUserDefaultUILanguage()]
@@ -151,7 +152,7 @@ class UNABScripts(QMainWindow):
         self.setGeometry(300, 200, 350, 600)
         self.setFixedSize(350, 600)
 
-        self.setWindowTitle("App Tutores v1.0.4")
+        self.setWindowTitle("App Tutores v1.1.0")
 
         self.setWindowIcon(QIcon("./icon.png"))
 
@@ -188,7 +189,7 @@ class UNABScripts(QMainWindow):
         with open("savefile.json", "w") as file:
             dump(data, file)
         self.threadpool.clear()
-
+    
 
 class TabsWidget(QWidget):
     """Main Widget
@@ -233,11 +234,7 @@ class TabsWidget(QWidget):
 
         # Set Logo
 
-        self.banner1 = QLabel(self)
-        image_unab = QPixmap("./banner.png")
-        self.banner1.setPixmap(image_unab)
-        self.banner1.setAlignment(Qt.AlignCenter)
-        self.tab1.layout.addWidget(self.banner1, alignment=Qt.AlignTop)
+        self.set_logo()
 
         # CBOX LMS
 
@@ -257,7 +254,7 @@ class TabsWidget(QWidget):
 
         self.cboxLMS.currentTextChanged.connect(self.cb_lms_option)
 
-        # CBOX Scripts
+        # CBOX Scripts LMS
 
         self.cboxScriptlayout = QWidget(self)
         self.cboxScriptlayout.layout = QHBoxLayout(self)
@@ -271,7 +268,7 @@ class TabsWidget(QWidget):
         self.tab1.layout.addWidget(self.cboxScriptlayout)
         self.cboxScript.setEnabled(False)
 
-        # Connect ComboBox
+        # Connect ComboBox Scripts
 
         self.cboxScript.currentTextChanged.connect(self.run_script_btn)
 
@@ -283,6 +280,7 @@ class TabsWidget(QWidget):
         self.tab1.layout.addWidget(self.output_box)
 
         # QPUSH Run
+
         self.runbtn = QPushButton(self.lang_dict["run"], self)
         self.runbtn.setFixedSize(80, 40)
         self.runbtn.setEnabled(False)
@@ -418,6 +416,22 @@ class TabsWidget(QWidget):
             self.load_data(savefile)
 
         self.setLayout(self.layout)
+
+        # validate_chromewebdriver(self.send_output)
+
+        validation_worker = Worker(validate_chromewebdriver, self.send_output)
+
+        self.threadpool.start(validation_worker)
+
+    def set_logo(self):
+        """
+        docstring
+        """
+        self.banner1 = QLabel(self)
+        image_unab = QPixmap("./banner.png")
+        self.banner1.setPixmap(image_unab)
+        self.banner1.setAlignment(Qt.AlignCenter)
+        self.tab1.layout.addWidget(self.banner1, alignment=Qt.AlignTop)
 
     def cb_lms_option(self, text):
         if text == "Blackboard":

@@ -37,6 +37,3 @@ def parse(path):
         parsed_file.append([element.strip(" ") for element in line.split(char)])
     return parsed_file
 
-
-if __name__ == '__main__':
-    print(parse("Archivo anuncios.txt"))
