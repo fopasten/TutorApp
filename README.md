@@ -1,3 +1,7 @@
+# DEPRECATED
+
+Se deprecó la aplicación luego de actualización de versión tiny MCE y posterior migración a Canvas LMS.
+
 # Bienvenido a la Página de TutorApp
 
 En esta sección encontrarás información sobre el uso de la app y todas las versiones publicadas.
